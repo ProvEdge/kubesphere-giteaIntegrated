@@ -18,9 +18,6 @@ package v1alpha3
 
 import (
 	"fmt"
-	"testing"
-	"time"
-
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +25,8 @@ import (
 	"kubesphere.io/kubesphere/pkg/informers"
 	model "kubesphere.io/kubesphere/pkg/models/monitoring"
 	"kubesphere.io/kubesphere/pkg/simple/client/monitoring"
+	"testing"
+	"time"
 )
 
 func TestIsRangeQuery(t *testing.T) {
@@ -85,7 +84,6 @@ func TestParseRequestParams(t *testing.T) {
 				metricFilter: ".*",
 				namedMetrics: model.ClusterMetrics,
 				option:       monitoring.ClusterOption{},
-				Operation:    OperationQuery,
 			},
 			expectedErr: false,
 		},
@@ -116,7 +114,6 @@ func TestParseRequestParams(t *testing.T) {
 					ResourceFilter: ".*",
 					NamespaceName:  "default",
 				},
-				Operation: OperationQuery,
 			},
 			expectedErr: false,
 		},
@@ -184,7 +181,6 @@ func TestParseRequestParams(t *testing.T) {
 				metricFilter: "etcd_server_list",
 				namedMetrics: model.EtcdMetrics,
 				option:       monitoring.ComponentOption{},
-				Operation:    OperationQuery,
 			},
 			expectedErr: false,
 		},
@@ -212,7 +208,6 @@ func TestParseRequestParams(t *testing.T) {
 				order:      "desc",
 				page:       1,
 				limit:      10,
-				Operation:  OperationQuery,
 			},
 			expectedErr: false,
 		},
@@ -222,7 +217,8 @@ func TestParseRequestParams(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			client := fake.NewSimpleClientset(&tt.namespace)
 			fakeInformerFactory := informers.NewInformerFactories(client, nil, nil, nil, nil, nil)
-			handler := NewHandler(client, nil, nil, fakeInformerFactory, nil)
+			handler := newHandler(client, nil, fakeInformerFactory, nil)
+
 			result, err := handler.makeQueryOptions(tt.params, tt.lvl)
 			if err != nil {
 				if !tt.expectedErr {

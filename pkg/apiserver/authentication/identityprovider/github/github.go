@@ -18,28 +18,20 @@ package github
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
-	"github.com/mitchellh/mapstructure"
 	"golang.org/x/oauth2"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"kubesphere.io/kubesphere/pkg/apiserver/authentication/identityprovider"
 	"kubesphere.io/kubesphere/pkg/apiserver/authentication/oauth"
-	"net/http"
 	"time"
 )
 
 const (
-	userInfoURL = "https://api.github.com/user"
-	authURL     = "https://github.com/login/oauth/authorize"
-	tokenURL    = "https://github.com/login/oauth/access_token"
+	UserInfoURL = "https://api.github.com/user"
 )
 
-func init() {
-	identityprovider.RegisterOAuthProvider(&ldapProviderFactory{})
-}
-
-type github struct {
+type Github struct {
 	// ClientID is the application's ID.
 	ClientID string `json:"clientID" yaml:"clientID"`
 
@@ -49,31 +41,25 @@ type github struct {
 	// Endpoint contains the resource server's token endpoint
 	// URLs. These are constants specific to each server and are
 	// often available via site-specific packages, such as
-	// google.Endpoint or github.endpoint.
-	Endpoint endpoint `json:"endpoint" yaml:"endpoint"`
+	// google.Endpoint or github.Endpoint.
+	Endpoint Endpoint `json:"endpoint" yaml:"endpoint"`
 
 	// RedirectURL is the URL to redirect users going through
 	// the OAuth flow, after the resource owner's URLs.
 	RedirectURL string `json:"redirectURL" yaml:"redirectURL"`
 
-	// Used to turn off TLS certificate checks
-	InsecureSkipVerify bool `json:"insecureSkipVerify" yaml:"insecureSkipVerify"`
-
 	// Scope specifies optional requested permissions.
 	Scopes []string `json:"scopes" yaml:"scopes"`
-
-	Config *oauth2.Config `json:"-" yaml:"-"`
 }
 
-// endpoint represents an OAuth 2.0 provider's authorization and token
+// Endpoint represents an OAuth 2.0 provider's authorization and token
 // endpoint URLs.
-type endpoint struct {
-	AuthURL     string `json:"authURL" yaml:"authURL"`
-	TokenURL    string `json:"tokenURL" yaml:"tokenURL"`
-	UserInfoURL string `json:"userInfoURL" yaml:"userInfoURL"`
+type Endpoint struct {
+	AuthURL  string `json:"authURL" yaml:"authURL"`
+	TokenURL string `json:"tokenURL" yaml:"tokenURL"`
 }
 
-type githubIdentity struct {
+type GithubIdentity struct {
 	Login             string    `json:"login"`
 	ID                int       `json:"id"`
 	NodeID            string    `json:"node_id"`
@@ -112,88 +98,70 @@ type githubIdentity struct {
 	Collaborators     int       `json:"collaborators"`
 }
 
-type ldapProviderFactory struct {
+func init() {
+	identityprovider.RegisterOAuthProvider(&Github{})
 }
 
-func (g *ldapProviderFactory) Type() string {
+func (g *Github) Type() string {
 	return "GitHubIdentityProvider"
 }
 
-func (g *ldapProviderFactory) Create(options oauth.DynamicOptions) (identityprovider.OAuthProvider, error) {
-	var github github
-	if err := mapstructure.Decode(options, &github); err != nil {
-		return nil, err
-	}
-
-	if github.Endpoint.AuthURL == "" {
-		github.Endpoint.AuthURL = authURL
-	}
-	if github.Endpoint.TokenURL == "" {
-		github.Endpoint.TokenURL = tokenURL
-	}
-	if github.Endpoint.UserInfoURL == "" {
-		github.Endpoint.UserInfoURL = userInfoURL
-	}
-	// fixed options
-	options["endpoint"] = oauth.DynamicOptions{
-		"authURL":     github.Endpoint.AuthURL,
-		"tokenURL":    github.Endpoint.TokenURL,
-		"userInfoURL": github.Endpoint.UserInfoURL,
-	}
-	github.Config = &oauth2.Config{
-		ClientID:     github.ClientID,
-		ClientSecret: github.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  github.Endpoint.AuthURL,
-			TokenURL: github.Endpoint.TokenURL,
-		},
-		RedirectURL: github.RedirectURL,
-		Scopes:      github.Scopes,
-	}
-	return &github, nil
-}
-
-func (g githubIdentity) GetUserID() string {
-	return g.Login
-}
-
-func (g githubIdentity) GetUsername() string {
-	return g.Login
-}
-
-func (g githubIdentity) GetEmail() string {
-	return g.Email
-}
-
-func (g *github) IdentityExchange(code string) (identityprovider.Identity, error) {
-	ctx := context.TODO()
-	if g.InsecureSkipVerify {
-		client := &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
-		}
-		ctx = context.WithValue(ctx, oauth2.HTTPClient, client)
-	}
-	token, err := g.Config.Exchange(ctx, code)
+func (g *Github) Setup(options *oauth.DynamicOptions) (identityprovider.OAuthProvider, error) {
+	data, err := yaml.Marshal(options)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := oauth2.NewClient(ctx, oauth2.StaticTokenSource(token)).Get(g.Endpoint.UserInfoURL)
+	var provider Github
+	err = yaml.Unmarshal(data, &provider)
+	if err != nil {
+		return nil, err
+	}
+	return &provider, nil
+}
+
+func (g GithubIdentity) GetName() string {
+	return g.Login
+}
+
+func (g GithubIdentity) GetEmail() string {
+	return g.Email
+}
+
+func (g *Github) IdentityExchange(code string) (identityprovider.Identity, error) {
+	config := oauth2.Config{
+		ClientID:     g.ClientID,
+		ClientSecret: g.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:   g.Endpoint.AuthURL,
+			TokenURL:  g.Endpoint.TokenURL,
+			AuthStyle: oauth2.AuthStyleAutoDetect,
+		},
+		RedirectURL: g.RedirectURL,
+		Scopes:      g.Scopes,
+	}
+
+	token, err := config.Exchange(context.Background(), code)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(token)).Get(UserInfoURL)
+
 	if err != nil {
 		return nil, err
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	var githubIdentity githubIdentity
+	var githubIdentity GithubIdentity
+
 	err = json.Unmarshal(data, &githubIdentity)
+
 	if err != nil {
 		return nil, err
 	}

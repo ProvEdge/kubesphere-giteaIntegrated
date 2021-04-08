@@ -17,11 +17,9 @@ limitations under the License.
 package oauth
 
 import (
-	"encoding/json"
 	"errors"
 	"kubesphere.io/kubesphere/pkg/utils/sliceutil"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -37,13 +35,12 @@ const (
 	// GrantHandlerDeny auto-denies client authorization grant requests
 	GrantHandlerDeny GrantHandlerType = "deny"
 	// MappingMethodAuto  The default value.The user will automatically create and mapping when login successful.
-	// Fails if a user with that username is already mapped to another identity.
+	// Fails if a user with that user name is already mapped to another identity.
 	MappingMethodAuto MappingMethod = "auto"
 	// MappingMethodLookup Looks up an existing identity, user identity mapping, and user, but does not automatically
 	// provision users or identities. Using this method requires you to manually provision users.
 	MappingMethodLookup MappingMethod = "lookup"
 	// MappingMethodMixed  A user entity can be mapped with multiple identifyProvider.
-	// not supported yet.
 	MappingMethodMixed MappingMethod = "mixed"
 )
 
@@ -77,56 +74,7 @@ type Options struct {
 	AccessTokenInactivityTimeout time.Duration `json:"accessTokenInactivityTimeout" yaml:"accessTokenInactivityTimeout"`
 }
 
-// the type of key must be string
 type DynamicOptions map[string]interface{}
-
-func (o DynamicOptions) MarshalJSON() ([]byte, error) {
-	data, err := json.Marshal(desensitize(o))
-	return data, err
-}
-
-var (
-	sensitiveKeys = [...]string{"password", "secret"}
-)
-
-// isSensitiveData returns whether the input string contains sensitive information
-func isSensitiveData(key string) bool {
-	for _, v := range sensitiveKeys {
-		if strings.Contains(strings.ToLower(key), v) {
-			return true
-		}
-	}
-	return false
-}
-
-// desensitize returns the desensitized data
-func desensitize(data map[string]interface{}) map[string]interface{} {
-	output := make(map[string]interface{})
-	for k, v := range data {
-		if isSensitiveData(k) {
-			continue
-		}
-		switch v.(type) {
-		case map[interface{}]interface{}:
-			output[k] = desensitize(convert(v.(map[interface{}]interface{})))
-		default:
-			output[k] = v
-		}
-	}
-	return output
-}
-
-// convert returns formatted data
-func convert(m map[interface{}]interface{}) map[string]interface{} {
-	output := make(map[string]interface{})
-	for k, v := range m {
-		switch k.(type) {
-		case string:
-			output[k.(string)] = v
-		}
-	}
-	return output
-}
 
 type IdentityProviderOptions struct {
 	// The provider name.
@@ -145,7 +93,7 @@ type IdentityProviderOptions struct {
 	Type string `json:"type" yaml:"type"`
 
 	// The options of identify provider
-	Provider DynamicOptions `json:"provider" yaml:"provider"`
+	Provider *DynamicOptions `json:"-" yaml:"provider"`
 }
 
 type Token struct {
@@ -231,7 +179,6 @@ func (o *Options) OAuthClient(name string) (Client, error) {
 	}
 	return Client{}, ErrorClientNotFound
 }
-
 func (o *Options) IdentityProviderOptions(name string) (*IdentityProviderOptions, error) {
 	for _, found := range o.IdentityProviders {
 		if found.Name == name {

@@ -39,7 +39,7 @@ func AddToContainer(c *restful.Container, client kubernetes.Interface, config *r
 
 	handler := newTerminalHandler(client, config)
 
-	webservice.Route(webservice.GET("/namespaces/{namespace}/pods/{pod}/exec").
+	webservice.Route(webservice.GET("/namespaces/{namespace}/pods/{pod}").
 		To(handler.handleTerminalSession).
 		Param(webservice.PathParameter("namespace", "namespace of which the pod located in")).
 		Param(webservice.PathParameter("pod", "name of the pod")).

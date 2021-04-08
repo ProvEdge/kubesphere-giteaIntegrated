@@ -18,13 +18,9 @@ package basic
 
 import (
 	"context"
-	"k8s.io/klog"
-	iamv1alpha2 "kubesphere.io/kubesphere/pkg/apis/iam/v1alpha2"
-	"kubesphere.io/kubesphere/pkg/apiserver/request"
-	"kubesphere.io/kubesphere/pkg/models/auth"
-
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/apiserver/pkg/authentication/user"
+	"kubesphere.io/kubesphere/pkg/models/iam/im"
 )
 
 // TokenAuthenticator implements kubernetes token authenticate interface with our custom logic.
@@ -33,36 +29,28 @@ import (
 // and group from user.AllUnauthenticated. This helps requests be passed along the handler chain,
 // because some resources are public accessible.
 type basicAuthenticator struct {
-	authenticator auth.PasswordAuthenticator
-	loginRecorder auth.LoginRecorder
+	authenticator im.PasswordAuthenticator
 }
 
-func NewBasicAuthenticator(authenticator auth.PasswordAuthenticator, loginRecorder auth.LoginRecorder) authenticator.Password {
+func NewBasicAuthenticator(authenticator im.PasswordAuthenticator) authenticator.Password {
 	return &basicAuthenticator{
 		authenticator: authenticator,
-		loginRecorder: loginRecorder,
 	}
 }
 
 func (t *basicAuthenticator) AuthenticatePassword(ctx context.Context, username, password string) (*authenticator.Response, bool, error) {
-	authenticated, provider, err := t.authenticator.Authenticate(username, password)
+
+	providedUser, err := t.authenticator.Authenticate(username, password)
+
 	if err != nil {
-		if t.loginRecorder != nil && err == auth.IncorrectPasswordError {
-			var sourceIP, userAgent string
-			if requestInfo, ok := request.RequestInfoFrom(ctx); ok {
-				sourceIP = requestInfo.SourceIP
-				userAgent = requestInfo.UserAgent
-			}
-			if err := t.loginRecorder.RecordLogin(username, iamv1alpha2.BasicAuth, provider, sourceIP, userAgent, err); err != nil {
-				klog.Errorf("Failed to record unsuccessful login attempt for user %s, error: %v", username, err)
-			}
-		}
 		return nil, false, err
 	}
+
 	return &authenticator.Response{
 		User: &user.DefaultInfo{
-			Name:   authenticated.GetName(),
-			Groups: append(authenticated.GetGroups(), user.AllAuthenticated),
+			Name:   providedUser.GetName(),
+			UID:    providedUser.GetUID(),
+			Groups: []string{user.AllAuthenticated},
 		},
 	}, true, nil
 }

@@ -19,18 +19,16 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	networkv1alpha1 "kubesphere.io/kubesphere/pkg/apis/network/v1alpha1"
 	authoptions "kubesphere.io/kubesphere/pkg/apiserver/authentication/options"
 	authorizationoptions "kubesphere.io/kubesphere/pkg/apiserver/authorization/options"
 	"kubesphere.io/kubesphere/pkg/simple/client/alerting"
-	"kubesphere.io/kubesphere/pkg/simple/client/auditing"
+	auditingclient "kubesphere.io/kubesphere/pkg/simple/client/auditing/elasticsearch"
 	"kubesphere.io/kubesphere/pkg/simple/client/cache"
 	"kubesphere.io/kubesphere/pkg/simple/client/devops/jenkins"
-	"kubesphere.io/kubesphere/pkg/simple/client/events"
+	eventsclient "kubesphere.io/kubesphere/pkg/simple/client/events/elasticsearch"
 	"kubesphere.io/kubesphere/pkg/simple/client/k8s"
-	"kubesphere.io/kubesphere/pkg/simple/client/kubeedge"
 	"kubesphere.io/kubesphere/pkg/simple/client/ldap"
-	"kubesphere.io/kubesphere/pkg/simple/client/logging"
+	"kubesphere.io/kubesphere/pkg/simple/client/logging/elasticsearch"
 	"kubesphere.io/kubesphere/pkg/simple/client/monitoring/prometheus"
 	"kubesphere.io/kubesphere/pkg/simple/client/multicluster"
 	"kubesphere.io/kubesphere/pkg/simple/client/network"
@@ -90,15 +88,14 @@ type Config struct {
 	S3Options             *s3.Options                                `json:"s3,omitempty" yaml:"s3,omitempty" mapstructure:"s3"`
 	OpenPitrixOptions     *openpitrix.Options                        `json:"openpitrix,omitempty" yaml:"openpitrix,omitempty" mapstructure:"openpitrix"`
 	MonitoringOptions     *prometheus.Options                        `json:"monitoring,omitempty" yaml:"monitoring,omitempty" mapstructure:"monitoring"`
-	LoggingOptions        *logging.Options                           `json:"logging,omitempty" yaml:"logging,omitempty" mapstructure:"logging"`
+	LoggingOptions        *elasticsearch.Options                     `json:"logging,omitempty" yaml:"logging,omitempty" mapstructure:"logging"`
 	AuthenticationOptions *authoptions.AuthenticationOptions         `json:"authentication,omitempty" yaml:"authentication,omitempty" mapstructure:"authentication"`
 	AuthorizationOptions  *authorizationoptions.AuthorizationOptions `json:"authorization,omitempty" yaml:"authorization,omitempty" mapstructure:"authorization"`
 	MultiClusterOptions   *multicluster.Options                      `json:"multicluster,omitempty" yaml:"multicluster,omitempty" mapstructure:"multicluster"`
-	EventsOptions         *events.Options                            `json:"events,omitempty" yaml:"events,omitempty" mapstructure:"events"`
-	AuditingOptions       *auditing.Options                          `json:"auditing,omitempty" yaml:"auditing,omitempty" mapstructure:"auditing"`
+	EventsOptions         *eventsclient.Options                      `json:"events,omitempty" yaml:"events,omitempty" mapstructure:"events"`
+	AuditingOptions       *auditingclient.Options                    `json:"auditing,omitempty" yaml:"auditing,omitempty" mapstructure:"auditing"`
 	AlertingOptions       *alerting.Options                          `json:"alerting,omitempty" yaml:"alerting,omitempty" mapstructure:"alerting"`
 	NotificationOptions   *notification.Options                      `json:"notification,omitempty" yaml:"notification,omitempty" mapstructure:"notification"`
-	KubeEdgeOptions       *kubeedge.Options                          `json:"kubeedge,omitempty" yaml:"kubeedge,omitempty" mapstructure:"kubeedge"`
 }
 
 // newConfig creates a default non-empty Config
@@ -116,13 +113,12 @@ func New() *Config {
 		MonitoringOptions:     prometheus.NewPrometheusOptions(),
 		AlertingOptions:       alerting.NewAlertingOptions(),
 		NotificationOptions:   notification.NewNotificationOptions(),
-		LoggingOptions:        logging.NewLoggingOptions(),
+		LoggingOptions:        elasticsearch.NewElasticSearchOptions(),
 		AuthenticationOptions: authoptions.NewAuthenticateOptions(),
 		AuthorizationOptions:  authorizationoptions.NewAuthorizationOptions(),
 		MultiClusterOptions:   multicluster.NewOptions(),
-		EventsOptions:         events.NewEventsOptions(),
-		AuditingOptions:       auditing.NewAuditingOptions(),
-		KubeEdgeOptions:       kubeedge.NewKubeEdgeOptions(),
+		EventsOptions:         eventsclient.NewElasticSearchOptions(),
+		AuditingOptions:       auditingclient.NewElasticSearchOptions(),
 	}
 }
 
@@ -170,46 +166,6 @@ func (conf *Config) ToMap() map[string]bool {
 			continue
 		}
 
-		if name == "network" {
-			ippoolName := "network.ippool"
-			nsnpName := "network"
-			networkTopologyName := "network.topology"
-			if conf.NetworkOptions == nil {
-				result[nsnpName] = false
-				result[ippoolName] = false
-			} else {
-				if conf.NetworkOptions.EnableNetworkPolicy {
-					result[nsnpName] = true
-				} else {
-					result[nsnpName] = false
-				}
-
-				if conf.NetworkOptions.IPPoolType == networkv1alpha1.IPPoolTypeNone {
-					result[ippoolName] = false
-				} else {
-					result[ippoolName] = true
-				}
-
-				if conf.NetworkOptions.WeaveScopeHost == "" {
-					result[networkTopologyName] = false
-				} else {
-					result[networkTopologyName] = true
-				}
-			}
-			continue
-		}
-
-		if name == "openpitrix" {
-			// openpitrix is always true
-			result[name] = true
-			if conf.OpenPitrixOptions == nil {
-				result["openpitrix.appstore"] = false
-			} else {
-				result["openpitrix.appstore"] = !conf.OpenPitrixOptions.AppStoreConfIsEmpty()
-			}
-			continue
-		}
-
 		if c.Field(i).IsNil() {
 			result[name] = false
 		} else {
@@ -243,7 +199,11 @@ func (conf *Config) stripEmptyOptions() {
 		conf.LdapOptions = nil
 	}
 
-	if conf.NetworkOptions != nil && conf.NetworkOptions.IsEmpty() {
+	if conf.OpenPitrixOptions != nil && conf.OpenPitrixOptions.IsEmpty() {
+		conf.OpenPitrixOptions = nil
+	}
+
+	if conf.NetworkOptions != nil && conf.NetworkOptions.EnableNetworkPolicy == false {
 		conf.NetworkOptions = nil
 	}
 
@@ -257,8 +217,7 @@ func (conf *Config) stripEmptyOptions() {
 		conf.S3Options = nil
 	}
 
-	if conf.AlertingOptions != nil && conf.AlertingOptions.Endpoint == "" &&
-		conf.AlertingOptions.PrometheusEndpoint == "" && conf.AlertingOptions.ThanosRulerEndpoint == "" {
+	if conf.AlertingOptions != nil && conf.AlertingOptions.Endpoint == "" {
 		conf.AlertingOptions = nil
 	}
 
@@ -280,9 +239,5 @@ func (conf *Config) stripEmptyOptions() {
 
 	if conf.AuditingOptions != nil && conf.AuditingOptions.Host == "" {
 		conf.AuditingOptions = nil
-	}
-
-	if conf.KubeEdgeOptions != nil && conf.KubeEdgeOptions.Endpoint == "" {
-		conf.KubeEdgeOptions = nil
 	}
 }

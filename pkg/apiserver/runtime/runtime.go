@@ -32,7 +32,6 @@ type ContainerBuilder []func(c *restful.Container) error
 
 const MimeMergePatchJson = "application/merge-patch+json"
 const MimeJsonPatchJson = "application/json-patch+json"
-const MimeMultipartFormData = "multipart/form-data"
 
 func init() {
 	restful.RegisterEntityAccessor(MimeMergePatchJson, restful.NewEntityAccessorJSON(restful.MIME_JSON))

@@ -181,10 +181,10 @@ func (h *devopsHandler) GetPipeline(request *restful.Request, response *restful.
 }
 
 func (h *devopsHandler) ListPipeline(request *restful.Request, response *restful.Response) {
-	devopsProject := request.PathParameter("devops")
+	devops := request.PathParameter("devops")
 	limit, offset := params.ParsePaging(request)
 
-	objs, err := h.devops.ListPipelineObj(devopsProject, nil, nil, limit, offset)
+	objs, err := h.devops.ListPipelineObj(devops, limit, offset)
 	if err != nil {
 		klog.Error(err)
 		if errors.IsNotFound(err) {
@@ -255,7 +255,6 @@ func (h *devopsHandler) DeletePipeline(request *restful.Request, response *restf
 	devops := request.PathParameter("devops")
 	pipeline := request.PathParameter("pipeline")
 
-	klog.V(8).Infof("ready to delete pipeline %s/%s", devops, pipeline)
 	err := h.devops.DeletePipelineObj(devops, pipeline)
 
 	if err != nil {

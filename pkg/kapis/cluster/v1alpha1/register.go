@@ -17,17 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"net/http"
-
 	"github.com/emicklei/go-restful"
-	restfulspec "github.com/emicklei/go-restful-openapi"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	k8sinformers "k8s.io/client-go/informers"
-
 	"kubesphere.io/kubesphere/pkg/api"
 	"kubesphere.io/kubesphere/pkg/apiserver/runtime"
 	"kubesphere.io/kubesphere/pkg/client/informers/externalversions"
-	"kubesphere.io/kubesphere/pkg/constants"
+	"net/http"
 )
 
 const (
@@ -44,22 +40,20 @@ func AddToContainer(container *restful.Container,
 	agentImage string) error {
 
 	webservice := runtime.NewWebService(GroupVersion)
-	h := newHandler(k8sInformers, ksInformers, proxyService, proxyAddress, agentImage)
+	h := newHandler(k8sInformers.Core().V1().Services().Lister(), ksInformers.Cluster().V1alpha1().Clusters().Lister(), proxyService, proxyAddress, agentImage)
 
 	// returns deployment yaml for cluster agent
 	webservice.Route(webservice.GET("/clusters/{cluster}/agent/deployment").
 		Doc("Return deployment yaml for cluster agent.").
 		Param(webservice.PathParameter("cluster", "Name of the cluster.").Required(true)).
 		To(h.generateAgentDeployment).
-		Returns(http.StatusOK, api.StatusOK, nil).
-		Metadata(restfulspec.KeyOpenAPITags, []string{constants.MultiClusterTag}))
+		Returns(http.StatusOK, api.StatusOK, nil))
 
 	webservice.Route(webservice.POST("/clusters/validation").
 		Doc("").
 		Param(webservice.BodyParameter("cluster", "cluster specification")).
 		To(h.validateCluster).
-		Returns(http.StatusOK, api.StatusOK, nil).
-		Metadata(restfulspec.KeyOpenAPITags, []string{constants.MultiClusterTag}))
+		Returns(http.StatusOK, api.StatusOK, nil))
 
 	container.Add(webservice)
 

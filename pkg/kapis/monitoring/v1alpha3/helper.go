@@ -17,21 +17,13 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"bytes"
-	"context"
-	"fmt"
-	"github.com/jszwec/csvutil"
-	"io"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/emicklei/go-restful"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"kubesphere.io/kubesphere/pkg/api"
 	model "kubesphere.io/kubesphere/pkg/models/monitoring"
 	"kubesphere.io/kubesphere/pkg/simple/client/monitoring"
+	"strconv"
+	"time"
 )
 
 const (
@@ -41,23 +33,18 @@ const (
 	DefaultPage   = 1
 	DefaultLimit  = 5
 
-	OperationQuery  = "query"
-	OperationExport = "export"
-
 	ComponentEtcd      = "etcd"
 	ComponentAPIServer = "apiserver"
 	ComponentScheduler = "scheduler"
 
-	ErrNoHit             = "'end' or 'time' must be after the namespace creation time."
-	ErrParamConflict     = "'time' and the combination of 'start' and 'end' are mutually exclusive."
-	ErrInvalidStartEnd   = "'start' must be before 'end'."
-	ErrInvalidPage       = "Invalid parameter 'page'."
-	ErrInvalidLimit      = "Invalid parameter 'limit'."
-	ErrParameterNotfound = "Parmameter [%s] not found"
+	ErrNoHit           = "'end' or 'time' must be after the namespace creation time."
+	ErrParamConflict   = "'time' and the combination of 'start' and 'end' are mutually exclusive."
+	ErrInvalidStartEnd = "'start' must be before 'end'."
+	ErrInvalidPage     = "Invalid parameter 'page'."
+	ErrInvalidLimit    = "Invalid parameter 'limit'."
 )
 
 type reqParams struct {
-	operation        string
 	time             string
 	start            string
 	end              string
@@ -80,16 +67,11 @@ type reqParams struct {
 	componentType    string
 	expression       string
 	metric           string
-	applications     string
-	services         string
-	pvcFilter        string
 }
 
 type queryOptions struct {
 	metricFilter string
 	namedMetrics []string
-
-	Operation string
 
 	start time.Time
 	end   time.Time
@@ -115,7 +97,6 @@ func (q queryOptions) shouldSort() bool {
 
 func parseRequestParams(req *restful.Request) reqParams {
 	var r reqParams
-	r.operation = req.QueryParameter("operation")
 	r.time = req.QueryParameter("time")
 	r.start = req.QueryParameter("start")
 	r.end = req.QueryParameter("end")
@@ -126,23 +107,10 @@ func parseRequestParams(req *restful.Request) reqParams {
 	r.limit = req.QueryParameter("limit")
 	r.metricFilter = req.QueryParameter("metrics_filter")
 	r.resourceFilter = req.QueryParameter("resources_filter")
+	r.nodeName = req.PathParameter("node")
 	r.workspaceName = req.PathParameter("workspace")
 	r.namespaceName = req.PathParameter("namespace")
-
-	if req.QueryParameter("node") != "" {
-		r.nodeName = req.QueryParameter("node")
-	} else {
-		// compatible with monitoring request
-		r.nodeName = req.PathParameter("node")
-	}
-
-	if req.QueryParameter("kind") != "" {
-		r.workloadKind = req.QueryParameter("kind")
-	} else {
-		// compatible with monitoring request
-		r.workloadKind = req.PathParameter("kind")
-	}
-
+	r.workloadKind = req.PathParameter("kind")
 	r.workloadName = req.PathParameter("workload")
 	r.podName = req.PathParameter("pod")
 	r.containerName = req.PathParameter("container")
@@ -151,10 +119,6 @@ func parseRequestParams(req *restful.Request) reqParams {
 	r.componentType = req.PathParameter("component")
 	r.expression = req.QueryParameter("expr")
 	r.metric = req.QueryParameter("metric")
-	r.applications = req.QueryParameter("applications")
-	r.services = req.QueryParameter("services")
-	r.pvcFilter = req.QueryParameter("pvc_filter")
-
 	return r
 }
 
@@ -168,71 +132,43 @@ func (h handler) makeQueryOptions(r reqParams, lvl monitoring.Level) (q queryOpt
 		q.metricFilter = DefaultFilter
 	}
 
-	q.Operation = r.operation
-	if r.operation == "" {
-		q.Operation = OperationQuery
-	}
-
 	switch lvl {
 	case monitoring.LevelCluster:
 		q.option = monitoring.ClusterOption{}
 		q.namedMetrics = model.ClusterMetrics
-
 	case monitoring.LevelNode:
 		q.identifier = model.IdentifierNode
-		q.option = monitoring.NodeOption{
-			ResourceFilter:   r.resourceFilter,
-			NodeName:         r.nodeName,
-			PVCFilter:        r.pvcFilter,        // metering pvc
-			StorageClassName: r.storageClassName, // metering pvc
-		}
 		q.namedMetrics = model.NodeMetrics
-
+		q.option = monitoring.NodeOption{
+			ResourceFilter: r.resourceFilter,
+			NodeName:       r.nodeName,
+		}
 	case monitoring.LevelWorkspace:
 		q.identifier = model.IdentifierWorkspace
-		q.option = monitoring.WorkspaceOption{
-			ResourceFilter:   r.resourceFilter,
-			WorkspaceName:    r.workspaceName,
-			PVCFilter:        r.pvcFilter,        // metering pvc
-			StorageClassName: r.storageClassName, // metering pvc
-		}
 		q.namedMetrics = model.WorkspaceMetrics
-
+		q.option = monitoring.WorkspaceOption{
+			ResourceFilter: r.resourceFilter,
+			WorkspaceName:  r.workspaceName,
+		}
 	case monitoring.LevelNamespace:
 		q.identifier = model.IdentifierNamespace
-		q.option = monitoring.NamespaceOption{
-			ResourceFilter:   r.resourceFilter,
-			WorkspaceName:    r.workspaceName,
-			NamespaceName:    r.namespaceName,
-			PVCFilter:        r.pvcFilter,        // metering pvc
-			StorageClassName: r.storageClassName, // metering pvc
-		}
 		q.namedMetrics = model.NamespaceMetrics
-
-	case monitoring.LevelApplication:
-		q.identifier = model.IdentifierApplication
-		if r.namespaceName == "" {
-			return q, errors.New(fmt.Sprintf(ErrParameterNotfound, "namespace"))
+		q.option = monitoring.NamespaceOption{
+			ResourceFilter: r.resourceFilter,
+			WorkspaceName:  r.workspaceName,
+			NamespaceName:  r.namespaceName,
 		}
-
-		q.option = monitoring.ApplicationsOption{
-			NamespaceName:    r.namespaceName,
-			Applications:     strings.Split(r.applications, "|"),
-			StorageClassName: r.storageClassName, // metering pvc
-		}
-		q.namedMetrics = model.ApplicationMetrics
-
 	case monitoring.LevelWorkload:
 		q.identifier = model.IdentifierWorkload
+		q.namedMetrics = model.WorkloadMetrics
 		q.option = monitoring.WorkloadOption{
 			ResourceFilter: r.resourceFilter,
 			NamespaceName:  r.namespaceName,
 			WorkloadKind:   r.workloadKind,
 		}
-		q.namedMetrics = model.WorkloadMetrics
-
 	case monitoring.LevelPod:
 		q.identifier = model.IdentifierPod
+		q.namedMetrics = model.PodMetrics
 		q.option = monitoring.PodOption{
 			ResourceFilter: r.resourceFilter,
 			NodeName:       r.nodeName,
@@ -241,36 +177,24 @@ func (h handler) makeQueryOptions(r reqParams, lvl monitoring.Level) (q queryOpt
 			WorkloadName:   r.workloadName,
 			PodName:        r.podName,
 		}
-		q.namedMetrics = model.PodMetrics
-
-	case monitoring.LevelService:
-		q.identifier = model.IdentifierService
-		q.option = monitoring.ServicesOption{
-			NamespaceName: r.namespaceName,
-			Services:      strings.Split(r.services, "|"),
-		}
-		q.namedMetrics = model.ServiceMetrics
-
 	case monitoring.LevelContainer:
 		q.identifier = model.IdentifierContainer
+		q.namedMetrics = model.ContainerMetrics
 		q.option = monitoring.ContainerOption{
 			ResourceFilter: r.resourceFilter,
 			NamespaceName:  r.namespaceName,
 			PodName:        r.podName,
 			ContainerName:  r.containerName,
 		}
-		q.namedMetrics = model.ContainerMetrics
-
 	case monitoring.LevelPVC:
 		q.identifier = model.IdentifierPVC
+		q.namedMetrics = model.PVCMetrics
 		q.option = monitoring.PVCOption{
 			ResourceFilter:            r.resourceFilter,
 			NamespaceName:             r.namespaceName,
 			StorageClassName:          r.storageClassName,
 			PersistentVolumeClaimName: r.pvcName,
 		}
-		q.namedMetrics = model.PVCMetrics
-
 	case monitoring.LevelComponent:
 		q.option = monitoring.ComponentOption{}
 		switch r.componentType {
@@ -325,7 +249,7 @@ func (h handler) makeQueryOptions(r reqParams, lvl monitoring.Level) (q queryOpt
 
 	// Ensure query start time to be after the namespace creation time
 	if r.namespaceName != "" {
-		ns, err := h.k.CoreV1().Namespaces().Get(context.Background(), r.namespaceName, corev1.GetOptions{})
+		ns, err := h.k.CoreV1().Namespaces().Get(r.namespaceName, corev1.GetOptions{})
 		if err != nil {
 			return q, err
 		}
@@ -375,36 +299,4 @@ func (h handler) makeQueryOptions(r reqParams, lvl monitoring.Level) (q queryOpt
 	}
 
 	return q, nil
-}
-
-func ExportMetrics(resp *restful.Response, metrics model.Metrics) {
-	resp.Header().Set(restful.HEADER_ContentType, "text/plain")
-	resp.Header().Set("Content-Disposition", "attachment")
-
-	for i, _ := range metrics.Results {
-		ret := metrics.Results[i]
-		for j, _ := range ret.MetricValues {
-			ret.MetricValues[j].TransferToExportedMetricValue()
-		}
-	}
-
-	resBytes, err := csvutil.Marshal(metrics.Results)
-	if err != nil {
-		api.HandleBadRequest(resp, nil, err)
-		return
-	}
-
-	output := new(bytes.Buffer)
-	_, err = output.Write(resBytes)
-	if err != nil {
-		api.HandleBadRequest(resp, nil, err)
-		return
-	}
-
-	_, err = io.Copy(resp, output)
-	if err != nil {
-		api.HandleBadRequest(resp, nil, err)
-		return
-	}
-	return
 }
