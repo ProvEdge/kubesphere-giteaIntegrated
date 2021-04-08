@@ -1,0 +1,13 @@
+approvers:
+    - runzexia
+    - soulseen
+    - shaowenchen
+
+reviewers:
+    - runzexia
+    - soulseen
+    - shaowenchen
+
+labels:
+    - area/api
+    - area/devops

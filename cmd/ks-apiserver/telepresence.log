@@ -1,0 +1,760 @@
+   0.0 TEL | Telepresence 0.109 launched at Thu Apr  8 15:51:41 2021
+   0.0 TEL |   /usr/bin/telepresence --namespace kubesphere-system --swap-deployment ks-apiserver --run go run apiserver.go
+   0.0 TEL | uname: uname_result(system='Linux', node='DESKTOP-OCQTC7I', release='5.4.72-microsoft-standard-WSL2', version='#1 SMP Wed Oct 28 23:40:43 UTC 2020', machine='x86_64', processor='x86_64')
+   0.0 TEL | Platform: linux
+   0.0 TEL | WSL: False
+   0.0 TEL | Python 3.6.9 (default, Jan 26 2021, 15:33:00)
+   0.0 TEL | [GCC 8.4.0]
+   0.0 TEL | BEGIN SPAN main.py:40(main)
+   0.0 TEL | BEGIN SPAN startup.py:83(set_kube_command)
+   0.0 TEL | Found kubectl -> /usr/local/bin/kubectl
+   0.1 TEL | [1] Capturing: kubectl config current-context
+   0.1 TEL | [1] captured in 0.06 secs.
+   0.1 TEL | [2] Capturing: kubectl --context admin@local version --short
+   0.4 TEL | [2] captured in 0.25 secs.
+   0.4 TEL | [3] Capturing: kubectl --context admin@local config view -o json
+   0.5 TEL | [3] captured in 0.06 secs.
+   0.5 TEL | [4] Capturing: kubectl --context admin@local api-versions
+   0.8 TEL | [4] captured in 0.34 secs.
+   0.8 TEL | Command: kubectl 1.20.5
+   0.8 TEL | Context: admin@local, namespace: kubesphere-system, version: 1.18.6
+   0.8 TEL | Warning: kubectl 1.20.5 may not work correctly with cluster version 1.18.6 due to the version discrepancy. See https://kubernetes.io/docs/setup/version-skew-policy/ for more information.
+   0.8 TEL | END SPAN startup.py:83(set_kube_command)    0.8s
+   0.8 >>> | Using a Pod instead of a Deployment for the Telepresence proxy. If you experience problems, please file an issue!
+   0.8 >>> | Set the environment variable TELEPRESENCE_USE_DEPLOYMENT to any non-empty value to force the old behavior, e.g.,
+   0.8 >>> |     env TELEPRESENCE_USE_DEPLOYMENT=1 telepresence --run curl hello
+   0.8 >>> | 
+   0.8 TEL | [5] Capturing: kubectl --context admin@local --namespace kubesphere-system get deploy ks-apiserver -o json
+   1.1   5 | {
+   1.1   5 |     "apiVersion": "apps/v1",
+   1.1   5 |     "kind": "Deployment",
+   1.1   5 |     "metadata": {
+   1.1   5 |         "annotations": {
+   1.1   5 |             "deployment.kubernetes.io/revision": "11",
+   1.1   5 |             "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"ks-apiserver\",\"tier\":\"backend\",\"version\":\"v3.0.0\"},\"name\":\"ks-apiserver\",\"namespace\":\"kubesphere-system\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"app\":\"ks-apiserver\",\"tier\":\"backend\",\"version\":\"v3.0.0\"}},\"strategy\":{\"rollingUpdate\":{\"maxSurge\":0},\"type\":\"RollingUpdate\"},\"template\":{\"metadata\":{\"labels\":{\"app\":\"ks-apiserver\",\"tier\":\"backend\",\"version\":\"v3.0.0\"}},\"spec\":{\"affinity\":{\"nodeAffinity\":{\"preferredDuringSchedulingIgnoredDuringExecution\":[{\"preference\":{\"matchExpressions\":[{\"key\":\"node-role.kubernetes.io/master\",\"operator\":\"In\",\"values\":[\"\"]}]},\"weight\":100}]}},\"containers\":[{\"command\":[\"ks-apiserver\",\"--logtostderr=true\"],\"image\":\"kubesphere/ks-apiserver:v3.0.0\",\"imagePullPolicy\":\"IfNotPresent\",\"livenessProbe\":{\"failureThreshold\":8,\"httpGet\":{\"path\":\"/kapis/version\",\"port\":9090,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":15,\"timeoutSeconds\":15},\"name\":\"ks-apiserver\",\"ports\":[{\"containerPort\":9090,\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"cpu\":1,\"memory\":\"1024Mi\"},\"requests\":{\"cpu\":\"20m\",\"memory\":\"100Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/var/run/docker.sock\",\"name\":\"docker-sock\"},{\"mountPath\":\"/etc/kubesphere/ingress-controller\",\"name\":\"ks-router-config\"},{\"mountPath\":\"/etc/kubesphere/\",\"name\":\"kubesphere-config\"},{\"mountPath\":\"/etc/localtime\",\"name\":\"host-time\"}]}],\"serviceAccount\":\"kubesphere\",\"serviceAccountName\":\"kubesphere\",\"tolerations\":[{\"effect\":\"NoSchedule\",\"key\":\"node-role.kubernetes.io/master\"},{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"},{\"effect\":\"NoExecute\",\"key\":\"node.kubernetes.io/not-ready\",\"operator\":\"Exists\",\"tolerationSeconds\":60},{\"effect\":\"NoExecute\",\"key\":\"node.kubernetes.io/unreachable\",\"operator\":\"Exists\",\"tolerationSeconds\":60}],\"volumes\":[{\"hostPath\":{\"path\":\"/var/run/docker.sock\",\"type\":\"\"},\"name\":\"docker-sock\"},{\"configMap\":{\"defaultMode\":420,\"name\":\"ks-router-config\"},\"name\":\"ks-router-config\"},{\"configMap\":{\"defaultMode\":420,\"name\":\"kubesphere-config\"},\"name\":\"kubesphere-config\"},{\"hostPath\":{\"path\":\"/etc/localtime\",\"type\":\"\"},\"name\":\"host-time\"}]}}}}\n",
+   1.1   5 |             "policies.kyverno.io/patches": "autogen-annotate-host-path.add-safe-to-evict.kyverno.io: removed /spec/template/spec/volumes/3/hostPath\n"
+   1.1   5 |         },
+   1.1   5 |         "creationTimestamp": "2021-02-16T13:59:56Z",
+   1.1   5 |         "generation": 50,
+   1.1   5 |         "labels": {
+   1.1   5 |             "app": "ks-apiserver",
+   1.1   5 |             "tier": "backend",
+   1.1   5 |             "version": "v3.0.0"
+   1.1   5 |         },
+   1.1   5 |         "managedFields": [
+   1.1   5 |             {
+   1.1   5 |                 "apiVersion": "apps/v1",
+   1.1   5 |                 "fieldsType": "FieldsV1",
+   1.1   5 |                 "fieldsV1": {
+   1.1   5 |                     "f:metadata": {
+   1.1   5 |                         "f:annotations": {
+   1.1   5 |                             ".": {},
+   1.1   5 |                             "f:kubectl.kubernetes.io/last-applied-configuration": {}
+   1.1   5 |                         },
+   1.1   5 |                         "f:labels": {
+   1.1   5 |                             ".": {},
+   1.1   5 |                             "f:app": {},
+   1.1   5 |                             "f:tier": {},
+   1.1   5 |                             "f:version": {}
+   1.1   5 |                         }
+   1.1   5 |                     },
+   1.1   5 |                     "f:spec": {
+   1.1   5 |                         "f:progressDeadlineSeconds": {},
+   1.1   5 |                         "f:replicas": {},
+   1.1   5 |                         "f:revisionHistoryLimit": {},
+   1.1   5 |                         "f:selector": {
+   1.1   5 |                             "f:matchLabels": {
+   1.1   5 |                                 ".": {},
+   1.1   5 |                                 "f:app": {},
+   1.1   5 |                                 "f:tier": {},
+   1.1   5 |                                 "f:version": {}
+   1.1   5 |                             }
+   1.1   5 |                         },
+   1.1   5 |                         "f:strategy": {
+   1.1   5 |                             "f:rollingUpdate": {
+   1.1   5 |                                 ".": {},
+   1.1   5 |                                 "f:maxSurge": {},
+   1.1   5 |                                 "f:maxUnavailable": {}
+   1.1   5 |                             },
+   1.1   5 |                             "f:type": {}
+   1.1   5 |                         },
+   1.1   5 |                         "f:template": {
+   1.1   5 |                             "f:metadata": {
+   1.1   5 |                                 "f:annotations": {
+   1.1   5 |                                     ".": {},
+   1.1   5 |                                     "f:kubectl.kubernetes.io/restartedAt": {}
+   1.1   5 |                                 },
+   1.1   5 |                                 "f:labels": {
+   1.1   5 |                                     ".": {},
+   1.1   5 |                                     "f:app": {},
+   1.1   5 |                                     "f:tier": {},
+   1.1   5 |                                     "f:version": {}
+   1.1   5 |                                 }
+   1.1   5 |                             },
+   1.1   5 |                             "f:spec": {
+   1.1   5 |                                 "f:affinity": {
+   1.1   5 |                                     ".": {},
+   1.1   5 |                                     "f:nodeAffinity": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:preferredDuringSchedulingIgnoredDuringExecution": {}
+   1.1   5 |                                     }
+   1.1   5 |                                 },
+   1.1   5 |                                 "f:containers": {
+   1.1   5 |                                     "k:{\"name\":\"ks-apiserver\"}": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:command": {},
+   1.1   5 |                                         "f:image": {},
+   1.1   5 |                                         "f:imagePullPolicy": {},
+   1.1   5 |                                         "f:livenessProbe": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:failureThreshold": {},
+   1.1   5 |                                             "f:httpGet": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:path": {},
+   1.1   5 |                                                 "f:port": {},
+   1.1   5 |                                                 "f:scheme": {}
+   1.1   5 |                                             },
+   1.1   5 |                                             "f:initialDelaySeconds": {},
+   1.1   5 |                                             "f:periodSeconds": {},
+   1.1   5 |                                             "f:successThreshold": {},
+   1.1   5 |                                             "f:timeoutSeconds": {}
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:name": {},
+   1.1   5 |                                         "f:ports": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "k:{\"containerPort\":9090,\"protocol\":\"TCP\"}": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:containerPort": {},
+   1.1   5 |                                                 "f:protocol": {}
+   1.1   5 |                                             }
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:resources": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:limits": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:cpu": {},
+   1.1   5 |                                                 "f:memory": {}
+   1.1   5 |                                             },
+   1.1   5 |                                             "f:requests": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:cpu": {},
+   1.1   5 |                                                 "f:memory": {}
+   1.1   5 |                                             }
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:terminationMessagePath": {},
+   1.1   5 |                                         "f:terminationMessagePolicy": {},
+   1.1   5 |                                         "f:volumeMounts": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "k:{\"mountPath\":\"/etc/kubesphere/\"}": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:mountPath": {},
+   1.1   5 |                                                 "f:name": {}
+   1.1   5 |                                             },
+   1.1   5 |                                             "k:{\"mountPath\":\"/etc/kubesphere/ingress-controller\"}": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:mountPath": {},
+   1.1   5 |                                                 "f:name": {}
+   1.1   5 |                                             },
+   1.1   5 |                                             "k:{\"mountPath\":\"/etc/localtime\"}": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:mountPath": {},
+   1.1   5 |                                                 "f:name": {}
+   1.1   5 |                                             },
+   1.1   5 |                                             "k:{\"mountPath\":\"/var/run/docker.sock\"}": {
+   1.1   5 |                                                 ".": {},
+   1.1   5 |                                                 "f:mountPath": {},
+   1.1   5 |                                                 "f:name": {}
+   1.1   5 |                                             }
+   1.1   5 |                                         }
+   1.1   5 |                                     }
+   1.1   5 |                                 },
+   1.1   5 |                                 "f:dnsPolicy": {},
+   1.1   5 |                                 "f:restartPolicy": {},
+   1.1   5 |                                 "f:schedulerName": {},
+   1.1   5 |                                 "f:securityContext": {},
+   1.1   5 |                                 "f:serviceAccount": {},
+   1.1   5 |                                 "f:serviceAccountName": {},
+   1.1   5 |                                 "f:terminationGracePeriodSeconds": {},
+   1.1   5 |                                 "f:tolerations": {},
+   1.1   5 |                                 "f:volumes": {
+   1.1   5 |                                     ".": {},
+   1.1   5 |                                     "k:{\"name\":\"docker-sock\"}": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:hostPath": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:path": {},
+   1.1   5 |                                             "f:type": {}
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:name": {}
+   1.1   5 |                                     },
+   1.1   5 |                                     "k:{\"name\":\"host-time\"}": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:hostPath": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:path": {},
+   1.1   5 |                                             "f:type": {}
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:name": {}
+   1.1   5 |                                     },
+   1.1   5 |                                     "k:{\"name\":\"ks-router-config\"}": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:configMap": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:defaultMode": {},
+   1.1   5 |                                             "f:name": {}
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:name": {}
+   1.1   5 |                                     },
+   1.1   5 |                                     "k:{\"name\":\"kubesphere-config\"}": {
+   1.1   5 |                                         ".": {},
+   1.1   5 |                                         "f:configMap": {
+   1.1   5 |                                             ".": {},
+   1.1   5 |                                             "f:defaultMode": {},
+   1.1   5 |                                             "f:name": {}
+   1.1   5 |                                         },
+   1.1   5 |                                         "f:name": {}
+   1.1   5 |                                     }
+   1.1   5 |                                 }
+   1.1   5 |                             }
+   1.1   5 |                         }
+   1.1   5 |                     }
+   1.1   5 |                 },
+   1.1   5 |                 "manager": "kubectl",
+   1.1   5 |                 "operation": "Update",
+   1.1   5 |                 "time": "2021-03-04T17:24:38Z"
+   1.1   5 |             },
+   1.1   5 |             {
+   1.1   5 |                 "apiVersion": "apps/v1",
+   1.1   5 |                 "fieldsType": "FieldsV1",
+   1.1   5 |                 "fieldsV1": {
+   1.1   5 |                     "f:metadata": {
+   1.1   5 |                         "f:annotations": {
+   1.1   5 |                             "f:deployment.kubernetes.io/revision": {}
+   1.1   5 |                         }
+   1.1   5 |                     },
+   1.1   5 |                     "f:status": {
+   1.1   5 |                         "f:conditions": {
+   1.1   5 |                             ".": {},
+   1.1   5 |                             "k:{\"type\":\"Available\"}": {
+   1.1   5 |                                 ".": {},
+   1.1   5 |                                 "f:lastTransitionTime": {},
+   1.1   5 |                                 "f:lastUpdateTime": {},
+   1.1   5 |                                 "f:message": {},
+   1.1   5 |                                 "f:reason": {},
+   1.1   5 |                                 "f:status": {},
+   1.1   5 |                                 "f:type": {}
+   1.1   5 |                             },
+   1.1   5 |                             "k:{\"type\":\"Progressing\"}": {
+   1.1   5 |                                 ".": {},
+   1.1   5 |                                 "f:lastTransitionTime": {},
+   1.1   5 |                                 "f:lastUpdateTime": {},
+   1.1   5 |                                 "f:message": {},
+   1.1   5 |                                 "f:reason": {},
+   1.1   5 |                                 "f:status": {},
+   1.1   5 |                                 "f:type": {}
+   1.1   5 |                             }
+   1.1   5 |                         },
+   1.1   5 |                         "f:observedGeneration": {}
+   1.1   5 |                     }
+   1.1   5 |                 },
+   1.1   5 |                 "manager": "kube-controller-manager",
+   1.1   5 |                 "operation": "Update",
+   1.1   5 |                 "time": "2021-04-05T14:36:44Z"
+   1.1   5 |             }
+   1.1   5 |         ],
+   1.1   5 |         "name": "ks-apiserver",
+   1.1   5 |         "namespace": "kubesphere-system",
+   1.1   5 |         "resourceVersion": "15571501",
+   1.1   5 |         "selfLink": "/apis/apps/v1/namespaces/kubesphere-system/deployments/ks-apiserver",
+   1.1   5 |         "uid": "c085990c-dc6d-4eed-9f6c-4582b29aa107"
+   1.1   5 |     },
+   1.1   5 |     "spec": {
+   1.1   5 |         "progressDeadlineSeconds": 600,
+   1.1   5 |         "replicas": 0,
+   1.1   5 |         "revisionHistoryLimit": 10,
+   1.1   5 |         "selector": {
+   1.1   5 |             "matchLabels": {
+   1.1   5 |                 "app": "ks-apiserver",
+   1.1   5 |                 "tier": "backend",
+   1.1   5 |                 "version": "v3.0.0"
+   1.1   5 |             }
+   1.1   5 |         },
+   1.1   5 |         "strategy": {
+   1.1   5 |             "rollingUpdate": {
+   1.1   5 |                 "maxSurge": 0,
+   1.1   5 |                 "maxUnavailable": "25%"
+   1.1   5 |             },
+   1.1   5 |             "type": "RollingUpdate"
+   1.1   5 |         },
+   1.1   5 |         "template": {
+   1.1   5 |             "metadata": {
+   1.1   5 |                 "annotations": {
+   1.1   5 |                     "kubectl.kubernetes.io/restartedAt": "2021-03-04T18:24:38+01:00"
+   1.1   5 |                 },
+   1.1   5 |                 "creationTimestamp": null,
+   1.1   5 |                 "labels": {
+   1.1   5 |                     "app": "ks-apiserver",
+   1.1   5 |                     "tier": "backend",
+   1.1   5 |                     "version": "v3.0.0"
+   1.1   5 |                 }
+   1.1   5 |             },
+   1.1   5 |             "spec": {
+   1.1   5 |                 "affinity": {
+   1.1   5 |                     "nodeAffinity": {
+   1.1   5 |                         "preferredDuringSchedulingIgnoredDuringExecution": [
+   1.1   5 |                             {
+   1.1   5 |                                 "preference": {
+   1.1   5 |                                     "matchExpressions": [
+   1.1   5 |                                         {
+   1.1   5 |                                             "key": "node-role.kubernetes.io/master",
+   1.1   5 |                                             "operator": "In",
+   1.1   5 |                                             "values": [
+   1.1   5 |                                                 ""
+   1.1   5 |                                             ]
+   1.1   5 |                                         }
+   1.1   5 |                                     ]
+   1.1   5 |                                 },
+   1.1   5 |                                 "weight": 100
+   1.1   5 |                             }
+   1.1   5 |                         ]
+   1.1   5 |                     }
+   1.1   5 |                 },
+   1.1   5 |                 "containers": [
+   1.1   5 |                     {
+   1.1   5 |                         "command": [
+   1.1   5 |                             "ks-apiserver",
+   1.1   5 |                             "--logtostderr=true"
+   1.1   5 |                         ],
+   1.1   5 |                         "image": "kubesphere/ks-apiserver:v3.0.0",
+   1.1   5 |                         "imagePullPolicy": "IfNotPresent",
+   1.1   5 |                         "livenessProbe": {
+   1.1   5 |                             "failureThreshold": 8,
+   1.1   5 |                             "httpGet": {
+   1.1   5 |                                 "path": "/kapis/version",
+   1.1   5 |                                 "port": 9090,
+   1.1   5 |                                 "scheme": "HTTP"
+   1.1   5 |                             },
+   1.1   5 |                             "initialDelaySeconds": 15,
+   1.1   5 |                             "periodSeconds": 10,
+   1.1   5 |                             "successThreshold": 1,
+   1.1   5 |                             "timeoutSeconds": 15
+   1.1   5 |                         },
+   1.1   5 |                         "name": "ks-apiserver",
+   1.1   5 |                         "ports": [
+   1.1   5 |                             {
+   1.1   5 |                                 "containerPort": 9090,
+   1.1   5 |                                 "protocol": "TCP"
+   1.1   5 |                             }
+   1.1   5 |                         ],
+   1.1   5 |                         "resources": {
+   1.1   5 |                             "limits": {
+   1.1   5 |                                 "cpu": "1",
+   1.1   5 |                                 "memory": "1Gi"
+   1.1   5 |                             },
+   1.1   5 |                             "requests": {
+   1.1   5 |                                 "cpu": "20m",
+   1.1   5 |                                 "memory": "100Mi"
+   1.1   5 |                             }
+   1.1   5 |                         },
+   1.1   5 |                         "terminationMessagePath": "/dev/termination-log",
+   1.1   5 |                         "terminationMessagePolicy": "File",
+   1.1   5 |                         "volumeMounts": [
+   1.1   5 |                             {
+   1.1   5 |                                 "mountPath": "/var/run/docker.sock",
+   1.1   5 |                                 "name": "docker-sock"
+   1.1   5 |                             },
+   1.1   5 |                             {
+   1.1   5 |                                 "mountPath": "/etc/kubesphere/ingress-controller",
+   1.1   5 |                                 "name": "ks-router-config"
+   1.1   5 |                             },
+   1.1   5 |                             {
+   1.1   5 |                                 "mountPath": "/etc/kubesphere/",
+   1.1   5 |                                 "name": "kubesphere-config"
+   1.1   5 |                             },
+   1.1   5 |                             {
+   1.1   5 |                                 "mountPath": "/etc/localtime",
+   1.1   5 |                                 "name": "host-time"
+   1.1   5 |                             }
+   1.1   5 |                         ]
+   1.1   5 |                     }
+   1.1   5 |                 ],
+   1.1   5 |                 "dnsPolicy": "ClusterFirst",
+   1.1   5 |                 "restartPolicy": "Always",
+   1.1   5 |                 "schedulerName": "default-scheduler",
+   1.1   5 |                 "securityContext": {},
+   1.1   5 |                 "serviceAccount": "kubesphere",
+   1.1   5 |                 "serviceAccountName": "kubesphere",
+   1.1   5 |                 "terminationGracePeriodSeconds": 30,
+   1.1   5 |                 "tolerations": [
+   1.1   5 |                     {
+   1.1   5 |                         "effect": "NoSchedule",
+   1.1   5 |                         "key": "node-role.kubernetes.io/master"
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "key": "CriticalAddonsOnly",
+   1.1   5 |                         "operator": "Exists"
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "effect": "NoExecute",
+   1.1   5 |                         "key": "node.kubernetes.io/not-ready",
+   1.1   5 |                         "operator": "Exists",
+   1.1   5 |                         "tolerationSeconds": 60
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "effect": "NoExecute",
+   1.1   5 |                         "key": "node.kubernetes.io/unreachable",
+   1.1   5 |                         "operator": "Exists",
+   1.1   5 |                         "tolerationSeconds": 60
+   1.1   5 |                     }
+   1.1   5 |                 ],
+   1.1   5 |                 "volumes": [
+   1.1   5 |                     {
+   1.1   5 |                         "hostPath": {
+   1.1   5 |                             "path": "/var/run/docker.sock",
+   1.1   5 |                             "type": ""
+   1.1   5 |                         },
+   1.1   5 |                         "name": "docker-sock"
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "configMap": {
+   1.1   5 |                             "defaultMode": 420,
+   1.1   5 |                             "name": "ks-router-config"
+   1.1   5 |                         },
+   1.1   5 |                         "name": "ks-router-config"
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "configMap": {
+   1.1   5 |                             "defaultMode": 420,
+   1.1   5 |                             "name": "kubesphere-config"
+   1.1   5 |                         },
+   1.1   5 |                         "name": "kubesphere-config"
+   1.1   5 |                     },
+   1.1   5 |                     {
+   1.1   5 |                         "hostPath": {
+   1.1   5 |                             "path": "/etc/localtime",
+   1.1   5 |                             "type": ""
+   1.1   5 |                         },
+   1.1   5 |                         "name": "host-time"
+   1.1   5 |                     }
+   1.1   5 |                 ]
+   1.1   5 |             }
+   1.1   5 |         }
+   1.1   5 |     },
+   1.1   5 |     "status": {
+   1.1   5 |         "conditions": [
+   1.1   5 |             {
+   1.1   5 |                 "lastTransitionTime": "2021-02-16T13:59:56Z",
+   1.1   5 |                 "lastUpdateTime": "2021-03-04T17:24:41Z",
+   1.1   5 |                 "message": "ReplicaSet \"ks-apiserver-7bfbcd9997\" has successfully progressed.",
+   1.1   5 |                 "reason": "NewReplicaSetAvailable",
+   1.1   5 |                 "status": "True",
+   1.1   5 |                 "type": "Progressing"
+   1.1   5 |             },
+   1.1   5 |             {
+   1.1   5 |                 "lastTransitionTime": "2021-04-05T14:36:35Z",
+   1.1   5 |                 "lastUpdateTime": "2021-04-05T14:36:35Z",
+   1.1   5 |                 "message": "Deployment has minimum availability.",
+   1.1   5 |                 "reason": "MinimumReplicasAvailable",
+   1.1   5 |                 "status": "True",
+   1.1   5 |                 "type": "Available"
+   1.1   5 |             }
+   1.1   5 |         ],
+   1.1   5 |         "observedGeneration": 50
+   1.1   5 |     }
+   1.1   5 | }
+   1.1 TEL | [5] captured in 0.32 secs.
+   1.1 TEL | Found ssh -> /usr/bin/ssh
+   1.1 TEL | [6] Capturing: ssh -V
+   1.1 TEL | [6] captured in 0.00 secs.
+   1.1 TEL | Found go -> /usr/local/go-1.13/bin/go
+   1.1 TEL | Found sshuttle-telepresence -> /usr/libexec/sshuttle-telepresence
+   1.1 TEL | Found conntrack -> /usr/sbin/conntrack
+   1.1 TEL | Found iptables -> /sbin/iptables
+   1.1 TEL | Found sudo -> /usr/bin/sudo
+   1.1 TEL | [7] Running: sudo -n echo -n
+   1.1 TEL | [7] ran in 0.01 secs.
+   1.1 TEL | [8] Capturing: sudo iptables --list --numeric
+   1.1 TEL | [8] captured in 0.01 secs.
+   1.1 >>> | Starting proxy with method 'vpn-tcp', which has the following limitations: All processes are affected, only one telepresence can run per machine, and you can't use other VPNs. You may need to add cloud hosts and headless services with --also-proxy. For a full list of method limitations see https://telepresence.io/reference/methods.html
+   1.1 TEL | Found sshfs -> /usr/bin/sshfs
+   1.1 TEL | Found fusermount -> /bin/fusermount
+   1.1 >>> | Volumes are rooted at $TELEPRESENCE_ROOT. See https://telepresence.io/howto/volumes.html for details.
+   1.1 TEL | [9] Running: kubectl --context admin@local --namespace kubesphere-system get pods telepresence-connectivity-check --ignore-not-found
+   1.5 TEL | [9] ran in 0.32 secs.
+   2.1 TEL | Scout info: {'latest_version': '0.109', 'application': 'telepresence', 'notices': []}
+   2.1 >>> | Starting network proxy to cluster by swapping out Deployment ks-apiserver with a proxy Pod
+   2.1 TEL | [10] Running: kubectl --context admin@local --namespace kubesphere-system create -f -
+   2.7  10 | pod/ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 created
+   2.7 TEL | [10] ran in 0.58 secs.
+   2.7 TEL | [11] Running: kubectl --context admin@local --namespace kubesphere-system scale Deployment ks-apiserver --replicas=0
+   3.1  11 | deployment.apps/ks-apiserver scaled
+   3.1 TEL | [11] ran in 0.37 secs.
+   3.1 TEL | BEGIN SPAN remote.py:109(wait_for_pod)
+   3.1 TEL | [12] Running: kubectl --context admin@local --namespace kubesphere-system wait --for=condition=ready --timeout=60s pod/ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4
+   4.8  12 | pod/ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 condition met
+   4.9 TEL | [12] ran in 1.79 secs.
+   4.9 TEL | [13] Capturing: kubectl --context admin@local --namespace kubesphere-system get pod ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 -o json
+   5.1 TEL | [13] captured in 0.28 secs.
+   5.1 TEL | END SPAN remote.py:109(wait_for_pod)    2.1s
+   5.1 TEL | BEGIN SPAN connect.py:37(connect)
+   5.1 TEL | [14] Launching kubectl logs: kubectl --context admin@local --namespace kubesphere-system logs -f ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 --container ks-apiserver --tail=10
+   5.1 TEL | [15] Launching kubectl port-forward: kubectl --context admin@local --namespace kubesphere-system port-forward ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 40775:8022
+   5.1 TEL | [16] Running: ssh -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 /bin/true
+   5.1 TEL | [16] exit 255 in 0.01 secs.
+   5.4 TEL | [17] Running: ssh -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 /bin/true
+   5.4 TEL | [17] exit 255 in 0.01 secs.
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] Loading ./forwarder.py...
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] /etc/resolv.conf changed, reparsing
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] Resolver added ('169.254.25.10', 53) to server list
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] SOCKSv5Factory starting on 9050
+   5.5  14 | 2021-04-08T14:51:45+0200 [socks.SOCKSv5Factory#info] Starting factory <socks.SOCKSv5Factory object at 0x7f5ebf5f2f98>
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] DNSDatagramProtocol starting on 9053
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] Starting protocol <twisted.names.dns.DNSDatagramProtocol object at 0x7f5ebf5fb278>
+   5.5  14 | 2021-04-08T14:51:45+0200 [-] Loaded.
+   5.5  14 | 2021-04-08T14:51:45+0200 [twisted.scripts._twistd_unix.UnixAppLogger#info] twistd 20.3.0 (/usr/bin/python3.6 3.6.8) starting up.
+   5.5  14 | 2021-04-08T14:51:45+0200 [twisted.scripts._twistd_unix.UnixAppLogger#info] reactor class: twisted.internet.epollreactor.EPollReactor.
+   5.7 TEL | [18] Running: ssh -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 /bin/true
+   5.7 TEL | [18] exit 255 in 0.01 secs.
+   5.7  15 | Forwarding from 127.0.0.1:40775 -> 8022
+   5.7  15 | Forwarding from [::1]:40775 -> 8022
+   5.9 TEL | [19] Running: ssh -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 /bin/true
+   5.9  15 | Handling connection for 40775
+   6.4 TEL | [19] ran in 0.52 secs.
+   6.4 >>> | Forwarding remote port 9090 to local port 9090.
+   6.4 TEL | [20] Launching SSH port forward (exposed ports): ssh -N -oServerAliveInterval=1 -oServerAliveCountMax=10 -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 -R '*:9090:127.0.0.1:9090'
+   6.4 >>> | 
+   6.4 TEL | Launching Web server for proxy poll
+   6.4 TEL | [21] Launching SSH port forward (socks and proxy poll): ssh -N -oServerAliveInterval=1 -oServerAliveCountMax=10 -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 -q -p 40775 telepresence@127.0.0.1 -L127.0.0.1:34439:127.0.0.1:9050 -R9055:127.0.0.1:38831
+   6.4  15 | Handling connection for 40775
+   6.4 TEL | END SPAN connect.py:37(connect)    1.3s
+   6.4 TEL | BEGIN SPAN remote_env.py:29(get_remote_env)
+   6.4 TEL | [22] Capturing: kubectl --context admin@local --namespace kubesphere-system exec ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 --container ks-apiserver -- python3 podinfo.py
+   6.5  15 | Handling connection for 40775
+   7.3 TEL | [22] captured in 0.83 secs.
+   7.3 TEL | END SPAN remote_env.py:29(get_remote_env)    0.8s
+   7.3 TEL | BEGIN SPAN mount.py:30(mount_remote_volumes)
+   7.3 TEL | [23] Running: sshfs -p 40775 -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5 telepresence@127.0.0.1:/ /tmp/tel-hbe18go3/fs
+   7.3  15 | Handling connection for 40775
+   7.9 TEL | [23] ran in 0.60 secs.
+   7.9 TEL | END SPAN mount.py:30(mount_remote_volumes)    0.6s
+   7.9 TEL | BEGIN SPAN vpn.py:62(connect_sshuttle)
+   7.9 TEL | BEGIN SPAN cidr.py:113(get_proxy_cidrs)
+   7.9 TEL | END SPAN cidr.py:113(get_proxy_cidrs)    0.0s
+   7.9 TEL | [24] Launching sshuttle: sshuttle-telepresence -v --dns --method nat -e 'ssh -F /dev/null -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oConnectTimeout=5' -r telepresence@127.0.0.1:40775 --to-ns 127.0.0.1:9053 10.233.64.0/24 10.233.0.0/18
+   7.9 TEL | BEGIN SPAN vpn.py:85(connect_sshuttle,sshuttle-wait)
+   7.9 TEL | Wait for vpn-tcp connection: hellotelepresence-0
+   7.9 TEL | [25] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-0")'
+   8.6  24 | Starting sshuttle proxy.
+   9.0 TEL | [25] exit 1 in 1.12 secs.
+   9.0 TEL | [26] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-0.a.sanity.check.telepresence.io")'
+   9.2 TEL | [26] exit 1 in 0.17 secs.
+   9.3 TEL | Wait for vpn-tcp connection: hellotelepresence-1
+   9.3 TEL | [27] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-1")'
+  10.2  24 | firewall manager: Starting firewall with Python version 3.6.9
+  10.2  24 | firewall manager: ready method name nat.
+  10.2  24 | IPv6 enabled: False
+  10.2  24 | UDP enabled: False
+  10.2  24 | DNS enabled: True
+  10.2  24 | TCP redirector listening on ('127.0.0.1', 12300).
+  10.2  24 | DNS listening on ('127.0.0.1', 12300).
+  10.2  24 | Starting client with Python version 3.6.9
+  10.2  24 | c : connecting to server...
+  10.2  15 | Handling connection for 40775
+  10.4 TEL | [27] exit 1 in 1.12 secs.
+  10.4 TEL | [28] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-1.a.sanity.check.telepresence.io")'
+  10.5 TEL | [28] exit 1 in 0.07 secs.
+  10.5  24 | Warning: Permanently added '[127.0.0.1]:40775' (ECDSA) to the list of known hosts.
+  10.6 TEL | Wait for vpn-tcp connection: hellotelepresence-2
+  10.6 TEL | [29] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-2")'
+  10.9  24 | Starting server with Python version 3.6.8
+  10.9  24 |  s: latency control setting = True
+  10.9  24 |  s: available routes:
+  10.9  24 | c : Connected.
+  10.9  24 | firewall manager: setting up.
+  10.9  24 | >> iptables -t nat -N sshuttle-12300
+  10.9  24 | >> iptables -t nat -F sshuttle-12300
+  10.9  24 | >> iptables -t nat -I OUTPUT 1 -j sshuttle-12300
+  10.9  24 | >> iptables -t nat -I PREROUTING 1 -j sshuttle-12300
+  10.9  24 | >> iptables -t nat -A sshuttle-12300 -j RETURN --dest 127.0.0.1/32 -p tcp
+  10.9  24 | >> iptables -t nat -A sshuttle-12300 -j REDIRECT --dest 10.233.64.0/24 -p tcp --to-ports 12300 -m ttl ! --ttl 42
+  10.9  24 | >> iptables -t nat -A sshuttle-12300 -j REDIRECT --dest 10.233.0.0/18 -p tcp --to-ports 12300 -m ttl ! --ttl 42
+  10.9  24 | >> iptables -t nat -A sshuttle-12300 -j REDIRECT --dest 172.29.80.1/32 -p udp --dport 53 --to-ports 12300 -m ttl ! --ttl 42
+  10.9  24 | >> iptables -t nat -A sshuttle-12300 -j REDIRECT --dest 224.0.0.252/32 -p udp --dport 5355 --to-ports 12300 -m ttl ! --ttl 42
+  10.9  24 | conntrack v1.4.4 (conntrack-tools): 0 flow entries have been deleted.
+  11.7 TEL | [29] exit 1 in 1.12 secs.
+  11.7 TEL | [30] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-2.a.sanity.check.telepresence.io")'
+  11.7  24 | c : DNS request from ('172.29.92.113', 51350) to None: 68 bytes
+  11.8  14 | 2021-04-08T14:51:52+0200 [stdout#info] Sanity check: b'hellotelepresence-2.a.sanity.check.telepresence.io'
+  11.8 TEL | [30] exit 1 in 0.12 secs.
+  11.9 TEL | Wait for vpn-tcp connection: hellotelepresence-3
+  11.9 TEL | [31] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-3")'
+  12.0  24 | c : DNS request from ('172.29.92.113', 35405) to None: 37 bytes
+  12.0  14 | 2021-04-08T14:51:53+0200 [stdout#info] Set DNS suffix we filter out to: [()]
+  12.0  14 | 2021-04-08T14:51:53+0200 [stdout#info] Result for b'hellotelepresence-3' is ['127.0.0.1']
+  12.0 TEL | [31] captured in 0.12 secs.
+  12.0 TEL | Resolved hellotelepresence-3. 2 more...
+  12.0 TEL | [32] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-3.a.sanity.check.telepresence.io")'
+  12.1  24 | c : DNS request from ('172.29.92.113', 45299) to None: 68 bytes
+  12.1  14 | 2021-04-08T14:51:53+0200 [stdout#info] Sanity check: b'hellotelepresence-3.a.sanity.check.telepresence.io'
+  12.1 TEL | [32] exit 1 in 0.12 secs.
+  12.2 TEL | Wait for vpn-tcp connection: hellotelepresence-4
+  12.2 TEL | [33] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-4")'
+  12.3  24 | c : DNS request from ('172.29.92.113', 36840) to None: 37 bytes
+  12.3  14 | 2021-04-08T14:51:53+0200 [stdout#info] Result for b'hellotelepresence-4' is ['127.0.0.1']
+  12.4 TEL | [33] captured in 0.12 secs.
+  12.4 TEL | Resolved hellotelepresence-4. 1 more...
+  12.4 TEL | [34] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-4.a.sanity.check.telepresence.io")'
+  12.4  24 | c : DNS request from ('172.29.92.113', 55334) to None: 68 bytes
+  12.4  14 | 2021-04-08T14:51:53+0200 [stdout#info] Sanity check: b'hellotelepresence-4.a.sanity.check.telepresence.io'
+  12.5 TEL | [34] exit 1 in 0.12 secs.
+  12.6 TEL | Wait for vpn-tcp connection: hellotelepresence-5
+  12.6 TEL | [35] Capturing: python3 -c 'import socket; socket.gethostbyname("hellotelepresence-5")'
+  12.6  24 | c : DNS request from ('172.29.92.113', 60915) to None: 37 bytes
+  12.7  14 | 2021-04-08T14:51:53+0200 [stdout#info] Result for b'hellotelepresence-5' is ['127.0.0.1']
+  12.7 TEL | [35] captured in 0.12 secs.
+  12.7 TEL | Resolved hellotelepresence-5. 0 more...
+  12.7 TEL | END SPAN vpn.py:85(connect_sshuttle,sshuttle-wait)    4.8s
+  12.7 TEL | END SPAN vpn.py:62(connect_sshuttle)    4.8s
+  12.7 >>> | Setup complete. Launching your command.
+  12.7 TEL | Everything launched. Waiting to exit...
+  12.7 TEL | BEGIN SPAN runner.py:754(wait_for_exit)
+  22.9  24 | c : DNS request from ('172.29.92.113', 44550) to None: 45 bytes
+  22.9  24 | c : DNS request from ('172.29.92.113', 33305) to None: 45 bytes
+  23.0  14 | 2021-04-08T14:52:04+0200 [stdout#info] A query: b'redis.kubesphere-system.svc'
+  23.0  14 | 2021-04-08T14:52:04+0200 [stdout#info] AAAA query, sending back A instead: b'redis.kubesphere-system.svc'
+  23.0  14 | 2021-04-08T14:52:04+0200 [stdout#info] A query: b'redis.kubesphere-system.svc'
+  23.0  14 | 2021-04-08T14:52:04+0200 [stdout#info] Result for b'redis.kubesphere-system.svc' is ['10.233.55.191']
+  23.3  14 | 2021-04-08T14:52:04+0200 [stdout#info] Result for b'redis.kubesphere-system.svc' is ['10.233.55.191']
+  23.4  24 | c : Accept TCP: 172.29.92.113:46162 -> 10.233.55.191:6379.
+  31.2 TEL | [36] Running: sudo -n echo -n
+  31.2 TEL | [36] ran in 0.01 secs.
+  35.0 TEL | (proxy checking local liveness)
+  35.0  14 | 2021-04-08T14:52:16+0200 [Poll#info] Checkpoint
+  61.2 TEL | [37] Running: sudo -n echo -n
+  61.2 TEL | [37] ran in 0.01 secs.
+  65.0 TEL | (proxy checking local liveness)
+  65.0  14 | 2021-04-08T14:52:46+0200 [Poll#info] Checkpoint
+  91.2 TEL | [38] Running: sudo -n echo -n
+  91.3 TEL | [38] ran in 0.01 secs.
+  94.9 TEL | (proxy checking local liveness)
+  95.0  14 | 2021-04-08T14:53:16+0200 [Poll#info] Checkpoint
+ 121.3 TEL | [39] Running: sudo -n echo -n
+ 121.3 TEL | [39] ran in 0.01 secs.
+ 125.0 TEL | (proxy checking local liveness)
+ 125.0  14 | 2021-04-08T14:53:46+0200 [Poll#info] Checkpoint
+ 151.3 TEL | [40] Running: sudo -n echo -n
+ 151.3 TEL | [40] ran in 0.01 secs.
+ 155.0 TEL | (proxy checking local liveness)
+ 155.0  14 | 2021-04-08T14:54:16+0200 [Poll#info] Checkpoint
+ 181.4 TEL | [41] Running: sudo -n echo -n
+ 181.4 TEL | [41] ran in 0.01 secs.
+ 185.0 TEL | (proxy checking local liveness)
+ 185.0  14 | 2021-04-08T14:54:46+0200 [Poll#info] Checkpoint
+ 211.4 TEL | [42] Running: sudo -n echo -n
+ 211.4 TEL | [42] ran in 0.01 secs.
+ 215.0 TEL | (proxy checking local liveness)
+ 215.0  14 | 2021-04-08T14:55:16+0200 [Poll#info] Checkpoint
+ 241.5 TEL | [43] Running: sudo -n echo -n
+ 241.5 TEL | [43] ran in 0.01 secs.
+ 245.0 TEL | (proxy checking local liveness)
+ 245.0  14 | 2021-04-08T14:55:46+0200 [Poll#info] Checkpoint
+ 271.5 TEL | [44] Running: sudo -n echo -n
+ 271.5 TEL | [44] ran in 0.01 secs.
+ 275.0 TEL | (proxy checking local liveness)
+ 275.0  14 | 2021-04-08T14:56:16+0200 [Poll#info] Checkpoint
+ 301.6 TEL | [45] Running: sudo -n echo -n
+ 301.6 TEL | [45] ran in 0.01 secs.
+ 305.0 TEL | (proxy checking local liveness)
+ 305.0  14 | 2021-04-08T14:56:46+0200 [Poll#info] Checkpoint
+ 331.6 TEL | [46] Running: sudo -n echo -n
+ 331.6 TEL | [46] ran in 0.01 secs.
+ 335.0 TEL | (proxy checking local liveness)
+ 335.0  14 | 2021-04-08T14:57:16+0200 [Poll#info] Checkpoint
+ 361.6 TEL | [47] Running: sudo -n echo -n
+ 361.7 TEL | [47] ran in 0.01 secs.
+ 365.0 TEL | (proxy checking local liveness)
+ 365.0  14 | 2021-04-08T14:57:46+0200 [Poll#info] Checkpoint
+ 391.7 TEL | [48] Running: sudo -n echo -n
+ 391.7 TEL | [48] ran in 0.01 secs.
+ 395.0 TEL | (proxy checking local liveness)
+ 395.0  14 | 2021-04-08T14:58:16+0200 [Poll#info] Checkpoint
+ 421.7 TEL | [49] Running: sudo -n echo -n
+ 421.7 TEL | [49] ran in 0.01 secs.
+ 425.0 TEL | (proxy checking local liveness)
+ 425.0  14 | 2021-04-08T14:58:46+0200 [Poll#info] Checkpoint
+ 451.8 TEL | [50] Running: sudo -n echo -n
+ 451.8 TEL | [50] ran in 0.01 secs.
+ 455.0 TEL | (proxy checking local liveness)
+ 455.0  14 | 2021-04-08T14:59:16+0200 [Poll#info] Checkpoint
+ 481.8 TEL | [51] Running: sudo -n echo -n
+ 481.8 TEL | [51] ran in 0.01 secs.
+ 485.0 TEL | (proxy checking local liveness)
+ 485.0  14 | 2021-04-08T14:59:46+0200 [Poll#info] Checkpoint
+ 511.9 TEL | [52] Running: sudo -n echo -n
+ 511.9 TEL | [52] ran in 0.01 secs.
+ 515.0 TEL | (proxy checking local liveness)
+ 515.0  14 | 2021-04-08T15:00:16+0200 [Poll#info] Checkpoint
+ 541.9 TEL | [53] Running: sudo -n echo -n
+ 541.9 TEL | [53] ran in 0.01 secs.
+ 545.0 TEL | (proxy checking local liveness)
+ 545.0  14 | 2021-04-08T15:00:46+0200 [Poll#info] Checkpoint
+ 571.9 TEL | [54] Running: sudo -n echo -n
+ 572.0 TEL | [54] ran in 0.01 secs.
+ 575.0 TEL | (proxy checking local liveness)
+ 575.0  14 | 2021-04-08T15:01:16+0200 [Poll#info] Checkpoint
+ 586.1 >>> | Keyboard interrupt (Ctrl-C/Ctrl-Break) pressed
+ 586.1 >>> | Exit cleanup in progress
+ 586.1 TEL | (Cleanup) Terminate local process
+ 586.1 TEL | Killing local process...
+ 586.1  24 | >> iptables -t nat -D OUTPUT -j sshuttle-12300
+ 586.1 TEL | Main process (go run apiserver.go)
+ 586.1  24 | >> iptables -t nat -D PREROUTING -j sshuttle-12300
+ 586.1 TEL |  exited with code -15.
+ 586.1 TEL | (Cleanup) Kill BG process [24] sshuttle
+ 586.1  24 | >> iptables -t nat -F sshuttle-12300
+ 586.1 TEL | (Cleanup) Unmount remote filesystem
+ 586.1 TEL | [55] Running: fusermount -z -u /tmp/tel-hbe18go3/fs
+ 586.1  24 | >> iptables -t nat -X sshuttle-12300
+ 586.1  55 | fusermount: entry for /tmp/tel-hbe18go3/fs not found in /etc/mtab
+ 586.1 TEL | [55] exit 1 in 0.00 secs.
+ 586.1 TEL | (Cleanup) Unmount remote filesystem failed:
+ 586.1 TEL | (Cleanup)   Command '['fusermount', '-z', '-u', '/tmp/tel-hbe18go3/fs']' returned non-zero exit status 1.
+ 586.1 TEL | (Cleanup) Kill BG process [21] SSH port forward (socks and proxy poll)
+ 586.1 TEL | [21] SSH port forward (socks and proxy poll): exit 0
+ 586.1 TEL | (Cleanup) Kill Web server for proxy poll
+ 586.2 TEL | [24] sshuttle: exit -15
+ 586.5 TEL | (Cleanup) Kill BG process [20] SSH port forward (exposed ports)
+ 586.5 TEL | [20] SSH port forward (exposed ports): exit 0
+ 586.5 TEL | (Cleanup) Kill BG process [15] kubectl port-forward
+ 586.5 TEL | [15] kubectl port-forward: exit -15
+ 586.5 TEL | (Cleanup) Kill BG process [14] kubectl logs
+ 586.5 TEL | [14] kubectl logs: exit -15
+ 586.5 TEL | Background process (kubectl logs) exited with return code -15. Command was:
+ 586.5 TEL |   kubectl --context admin@local --namespace kubesphere-system logs -f ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4 --container ks-apiserver --tail=10
+ 586.5 TEL | 
+ 586.5 TEL | Recent output was:
+ 586.5 TEL |   2021-04-08T14:56:46+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:57:16+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:57:46+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:58:16+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:58:46+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:59:16+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T14:59:46+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T15:00:16+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T15:00:46+0200 [Poll#info] Checkpoint
+ 586.5 TEL |   2021-04-08T15:01:16+0200 [Poll#info] Checkpoint
+ 586.5 TEL | (Cleanup) Re-scale original deployment
+ 586.5 TEL | [56] Running: kubectl --context admin@local --namespace kubesphere-system scale Deployment ks-apiserver --replicas=0
+ 587.4  56 | deployment.apps/ks-apiserver scaled
+ 587.4 TEL | [56] ran in 0.90 secs.
+ 587.4 TEL | (Cleanup) Delete proxy Pod
+ 587.4 >>> | Cleaning up Pod
+ 587.4 TEL | [57] Running: kubectl --context admin@local --namespace kubesphere-system delete --ignore-not-found --wait=false --selector=telepresence=9f3a04009fdb49c49e4a6d3c198e1da4 Pod
+ 587.7  57 | pod "ks-apiserver-9f3a04009fdb49c49e4a6d3c198e1da4" deleted
+ 587.7 TEL | [57] ran in 0.33 secs.
+ 587.7 TEL | (Cleanup) Kill sudo privileges holder
+ 587.7 TEL | (Cleanup) Stop time tracking
+ 587.7 TEL | END SPAN main.py:40(main)  587.7s
+ 587.7 TEL | (Cleanup) Remove temporary directory
+ 587.7 TEL | (Cleanup) Save caches
+ 588.0 TEL | (sudo privileges holder thread exiting)
