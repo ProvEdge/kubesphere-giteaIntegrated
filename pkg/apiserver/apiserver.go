@@ -82,8 +82,8 @@ import (
 	"time"
 	//hellokubesphere "kubesphere.io/kubesphere/pkg/kapis/hellokubesphere/v1alpha1"
 	harborgetprojects "kubesphere.io/kubesphere/pkg/kapis/harborgetprojects/v1alpha1"
-	//harborgetrepos "kubesphere.io/kubesphere/pkg/kapis/harborgetrepos/v1alpha2"
-	//giteaintegration "kubesphere.io/kubesphere/pkg/kapis/giteaintegration/v1alpha1"
+	harborgetrepos "kubesphere.io/kubesphere/pkg/kapis/harborgetrepos/v1alpha2"
+	harborgetartifacts "kubesphere.io/kubesphere/pkg/kapis/harborgetartifacts/v1alpha3"
 )
 
 const (
@@ -218,8 +218,8 @@ func (s *APIServer) installKubeSphereAPIs() {
 	urlruntime.Must(version.AddToContainer(s.container, s.KubernetesClient.Discovery()))
 	//urlruntime.Must(hellokubesphere.AddToContainer(s.container))
 	urlruntime.Must(harborgetprojects.AddToContainer(s.container))
-	//urlruntime.Must(harborgetrepos.AddToContainer(s.container))
-	//urlruntime.Must(giteaintegration.AddToContainer(s.container))
+	urlruntime.Must(harborgetrepos.AddToContainer(s.container))
+	urlruntime.Must(harborgetartifacts.AddToContainer(s.container))
 }
 
 func (s *APIServer) Run(stopCh <-chan struct{}) (err error) {
