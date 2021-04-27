@@ -7,9 +7,9 @@ import (
 type handler struct{}
 
 type requestData struct {
-	url      string `json:"url"`
-	userName string `json:"username"`
-	passWord string `json:"password"`
+	url      string 
+	userName string 
+	passWord string 
 }
 
 func newHandler() handler {
