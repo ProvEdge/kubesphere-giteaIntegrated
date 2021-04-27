@@ -84,6 +84,7 @@ import (
 	harborgetprojects "kubesphere.io/kubesphere/pkg/kapis/harborgetprojects/v1alpha1"
 	harborgetrepos "kubesphere.io/kubesphere/pkg/kapis/harborgetrepos/v1alpha2"
 	harborgetartifacts "kubesphere.io/kubesphere/pkg/kapis/harborgetartifacts/v1alpha3"
+	giteaIntegration "kubesphere.io/kubesphere/pkg/kapis/giteaIntegration/v1alpha1" 
 )
 
 const (
@@ -220,6 +221,7 @@ func (s *APIServer) installKubeSphereAPIs() {
 	urlruntime.Must(harborgetprojects.AddToContainer(s.container))
 	urlruntime.Must(harborgetrepos.AddToContainer(s.container))
 	urlruntime.Must(harborgetartifacts.AddToContainer(s.container))
+	urlruntime.Must(giteaIntegration.AddToContainer(s.container))
 }
 
 func (s *APIServer) Run(stopCh <-chan struct{}) (err error) {
